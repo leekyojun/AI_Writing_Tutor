@@ -73,7 +73,7 @@ async function handleImageUpload(event) {
             content: [
               {
                 type: "text",
-                text: "이 이미지의 영어 텍스트를 정확하게 추출해주세요. 오탈자가 있으면 원본 그대로 유지해주세요.",
+                text: "Please extract the exact text from the image as it appears. Do not provide any additional commentary or corrections.",
               },
               {
                 type: "image_url",
@@ -132,7 +132,7 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
       // => Authorization은 Worker에서 자동 처리
     },
     body: JSON.stringify({
-      model: "gpt-4o",   // 또는 gpt-4o-mini 등
+      model: "gpt-4o-mini",   // 또는 gpt-4o-mini 등
       messages: messages,
       stream: true,
       max_tokens: 512,
@@ -432,7 +432,7 @@ btnDraftFeedback.addEventListener("click", async () => {
 
 // (4) Final Draft
 btnImportDraft.addEventListener("click", () => {
-  finalText.innerText = draftText.value;
+  finalText.innerText = draftText.innerText;
 });
 
 btnFinalSubmit.addEventListener("click", async () => {
