@@ -259,7 +259,9 @@ btnBrainstorm.addEventListener("click", async () => {
   const userPrompt = `
   Topic: "${topic}"
   
-  Please provide Key Words that help develop the topic and include short explanations in Korean. Follow this format:
+  Please provide Key Words that help develop the topic and include short explanations in Korean. Provide up to 6 main items in total.
+  
+  Follow this format:
 
        1) weather (날씨)
           - 좋아하는 계절의 날씨에 대해 써보세요. 
@@ -273,7 +275,7 @@ btnBrainstorm.addEventListener("click", async () => {
          - 그 계절이 당신에게 어떤 기분을 주는지 적어보세요. 
          - 예: I feel happy because I can play outside. (나는 밖에서 놀 수 있어서 행복하다.)
 
-      Provide up to 6 main items in total. Make your examples simple and fun!
+   Make your examples simple and fun!
   `;
 
   let accumulatedText = "";
