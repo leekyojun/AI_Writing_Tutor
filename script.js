@@ -451,7 +451,6 @@ btnFinalSubmit.addEventListener("click", async () => {
   Ensure your feedback is motivating and encourages the student to continue improving their writing. Be concise but thorough.
 `;
 
-
 let accumulatedText = "";
 try {
   // 1) Worker + 버퍼 파싱 로직 통일
@@ -494,28 +493,24 @@ try {
     }
   }
 
-      // (B) 그래프 업데이트
-      if (ideaScore !== null && structureScore !== null && accuracyScore !== null) {
-        updateGraphWithScores(ideaScore, structureScore, accuracyScore);
-      }
-
-      // (C) "Feedback:" 이후 부분만 최종 표시
-      let feedbackText = "";
-      const feedbackIndex = accumulatedText.indexOf("Feedback:");
-      if (feedbackIndex !== -1) {
-        const startPos = feedbackIndex + "Feedback:".length;
-        feedbackText = accumulatedText.substring(startPos).trim();
-      } else {
-        feedbackText = accumulatedText; 
-      }
-
-      // 최종 결과창에는 'Feedback:' 이후만 노출
-      finalResult.textContent = feedbackText;
-    }
-
-  } catch (err) {
-    console.error(err);
-    finalResult.textContent = "에러 발생: " + err.message;
+  // 3) 그래프 업데이트
+  if (ideaScore !== null && structureScore !== null && accuracyScore !== null) {
+    updateGraphWithScores(ideaScore, structureScore, accuracyScore);
   }
-});
 
+  // 4) "Feedback:" 이후만 화면에 최종 표시
+  let feedbackText = "";
+  const feedbackIndex = accumulatedText.indexOf("Feedback:");
+  if (feedbackIndex !== -1) {
+    const startPos = feedbackIndex + "Feedback:".length;
+    feedbackText = accumulatedText.substring(startPos).trim();
+  } else {
+    feedbackText = accumulatedText;
+  }
+  finalResult.textContent = feedbackText;
+
+} catch (err) {
+  console.error(err);
+  finalResult.textContent = "에러 발생: " + err.message;
+}
+});
