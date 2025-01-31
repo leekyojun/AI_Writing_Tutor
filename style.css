@@ -141,6 +141,71 @@ html, body {
     box-sizing: border-box;
   }
 
+/* 이미지 업로드 버튼 그룹 */
+.image-upload-group {
+  display: flex;
+  justify-content: flex-end; 
+  width: 100%; 
+  gap: 18px;
+  margin-bottom: -4px;
+}
+
+/* 카메라 버튼 스타일 */
+.camera-btn {
+  display: inline-block;
+  width: 25px;
+  height: 23px;
+  background: url('camera_n.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.camera-btn:hover {
+  background-image: url('camera_f.png');
+}
+
+/* 이미지 업로드 버튼 스타일 */
+.image-btn {
+  display: inline-block;
+  width: 23px;
+  height: 23px;
+  background: url('image_n.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.image-btn:hover {
+  background-image: url('image_f.png');
+}
+
+/* 버튼 텍스트 숨기기 */
+.btn-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+
+ /* 텍스트 입력 상자 */
+.draft-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 8px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  background-color: white;
+  overflow-y: auto;
+}
+
 
   /* 결과 표시 영역 */
   .result-box {
@@ -246,6 +311,7 @@ html, body {
     .logo {
       position: static;       
     }
+   
     #customIdeaInput {
       max-width: 100%; /* 작은 화면에서는 최대 크기를 제한하지 않음 */
       width: 100%; /* 화면 폭에 맞게 조정 */

@@ -82,9 +82,24 @@
     <!-- 3) First Draft -->
     <div class="section">
       <h2 class="section-title">3. First Draft: 나만의 아이디어로 자유롭게 글을 써 봐요.</h2>
-      
-      <!-- 초안 텍스트박스 (2배 크기, 16px 폰트) -->
-      <textarea id="draftText" class="draft-textarea" placeholder="초안을 작성해 보세요..."></textarea>
+
+
+  <!-- 이미지 업로드 버튼 수정 -->
+  <div class="image-upload-group">
+    <label class="camera-btn">
+      <input type="file" id="cameraDraft" accept="image/*" capture="environment" hidden>
+      <span class="btn-text">카메라 촬영</span>
+    </label>
+    <label class="image-btn">
+      <input type="file" id="uploadDraft" accept="image/*" hidden>
+      <span class="btn-text">이미지 업로드</span>
+    </label>
+  </div>
+     
+
+
+      <!-- 초안 텍스트박스 -->
+      <div id="draftText" class="draft-textarea" contenteditable="true"></div>
       <button id="btnDraftFeedback">AI 피드백 생성</button>
 
       <!-- 결과 표시 -->
@@ -97,8 +112,21 @@
     <div class="section">
       <h2 class="section-title">4. Final Draft: 멋진 글을 완성해 봐요.</h2>
       
+  <div class="image-upload-group">
+    <label class="camera-btn">
+      <input type="file" id="cameraFinal" accept="image/*" capture="environment" hidden>
+      <span class="btn-text">카메라 촬영</span>
+    </label>
+    <label class="image-btn">
+      <input type="file" id="uploadFinal" accept="image/*" hidden>
+      <span class="btn-text">이미지 업로드</span>
+    </label>
+  </div>
+
+
+
       <!-- 최종 글 텍스트박스 (Same size/font) -->
-      <textarea id="finalText" class="draft-textarea" placeholder="최종 글을 작성해 보세요..."></textarea>
+      <div id="finalText" class="draft-textarea" contenteditable="true"></div>
 
       <!-- 버튼들 -->
       <div style="display: flex; gap: 12px; justify-content: space-between; width: 100%; margin-bottom: 12px">

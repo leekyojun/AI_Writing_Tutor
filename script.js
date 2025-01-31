@@ -24,6 +24,13 @@ const btnImportDraft   = document.getElementById("btnImportDraft");
 const btnFinalSubmit   = document.getElementById("btnFinalSubmit");
 const finalResult      = document.getElementById("finalResult");
 
+// 이미지 업로드 및 카메라 촬영 버튼
+const uploadDraft = document.getElementById("uploadDraft");
+const cameraDraft = document.getElementById("cameraDraft");
+const uploadFinal = document.getElementById("uploadFinal");
+const cameraFinal = document.getElementById("cameraFinal");
+
+
 // 난이도
 const studentDifficultySelect = document.getElementById("studentDifficulty");
 
@@ -32,6 +39,77 @@ let ideaList = [];
 
 // firstDraft의 전역 변수를 선언해 초기값은 빈 문자열로
 let firstDraftContent = "";
+
+/**
+ * 이미지 업로드 핸들러 (GPT-4 Vision API로 이미지 전송 및 텍스트 추출)
+ */
+async function handleImageUpload(event) {
+  const file = event.target.files[0]; // 첫 번째 선택한 파일
+  if (!file) return;
+
+  const targetTextArea = event.target.id.includes("Draft") ? draftText : finalText;
+  targetTextArea.value = "이미지 처리 중입니다...";
+
+  try {
+    // 이미지를 Base64로 변환
+    const base64Image = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+
+    // GPT-4 Vision API 호출
+    const response = await fetch(WORKER_PROXY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4-vision-preview",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "이 이미지의 영어 텍스트를 정확하게 추출해주세요. 오탈자가 있으면 원본 그대로 유지해주세요.",
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 1000,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("이미지 처리 중 오류가 발생했습니다.");
+    }
+
+    const data = await response.json();
+    const extractedText = data.choices[0].message.content;
+
+    // 추출된 텍스트를 텍스트 영역에 표시
+    targetTextArea.value = extractedText;
+    targetTextArea.focus();
+  } catch (error) {
+    console.error("Error:", error);
+    targetTextArea.value = "이미지 처리 중 오류가 발생했습니다: " + error.message;
+  }
+}
+
+
+// 이벤트 리스너 추가
+uploadDraft.addEventListener("change", handleImageUpload);
+cameraDraft.addEventListener("change", handleImageUpload);
+uploadFinal.addEventListener("change", handleImageUpload);
+cameraFinal.addEventListener("change", handleImageUpload);
 
 
 /**
@@ -174,7 +252,7 @@ btnBrainstorm.addEventListener("click", async () => {
   const systemPrompt = `
   You are a kind and encouraging English tutor who helps young Korean students develop ideas for writing in English.
   The student's difficulty is: ${difficultyDesc}.
-  Please provide numbered key phrases (1) ~ 6)) as writing prompts, with short Korean explanations for each phrase. Use Korean except the key phrases and exmaple sentences.
+  Please provide numbered key phrases (1) ~ 6)) as writing prompts, with short Korean explanations for each phrase. Use Korean except the key phrases and example sentences.
   `;
 
   // user prompt
@@ -514,3 +592,4 @@ try {
   finalResult.textContent = "에러 발생: " + err.message;
 }
 });
+
