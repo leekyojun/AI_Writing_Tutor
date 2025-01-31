@@ -40,12 +40,20 @@ let ideaList = [];
 // firstDraft의 전역 변수를 선언해 초기값은 빈 문자열로
 let firstDraftContent = "";
 
+
+
+//이미지 업로드 
+
 async function handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // 최종으로 넣어줄 textarea
-  const targetTextArea = event.target.id.includes("Draft") ? draftText : finalText;
+  // 어떤 textarea에 결과를 표시할 것인지 구분
+  const targetTextArea = event.target.id.includes("Draft") 
+    ? draftText 
+    : finalText;
+
+  // 임시 표시
   targetTextArea.value = "이미지 처리 중입니다...";
 
   try {
@@ -53,8 +61,8 @@ async function handleImageUpload(event) {
     const base64Image = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        // "data:image/jpeg;base64,..." 형태 전체가 아니라, Base64 부분만 추출하려면 아래처럼 split
-        // 여기서는 그대로 한꺼번에 넘길 수도 있음.
+        // "data:image/jpeg;base64,..." 형태 전체
+        // 혹은 "Base64 부분"만 추출해서 붙여도 무관.
         const base64Data = reader.result.split(",")[1];
         resolve(base64Data);
       };
@@ -62,10 +70,9 @@ async function handleImageUpload(event) {
       reader.readAsDataURL(file);
     });
 
-    // 2) OpenAI Vision API 호출(프록시 경유)
+    // 2) Vision 모델에 전달할 Request Body (stream: false)
     const requestBody = {
-      model: "gpt-4o-mini",  // Vision 모델
-      // Vision 모델은 messages[].content에 배열로 [text, image_url]을 모두 넣어야 함
+      model: "gpt-4o-mini",  
       messages: [
         {
           role: "user",
@@ -78,41 +85,48 @@ async function handleImageUpload(event) {
               type: "image_url",
               image_url: {
                 url: `data:image/jpeg;base64,${base64Image}`,
-                // detail: "auto" // 명시적으로 필요하면 추가 (기본값: auto)
+                // detail: "auto" // 필요 시
               }
             }
           ]
         }
       ],
       max_tokens: 300,
-      // Vision 예제 문서에서는 store: true도 자주 사용
-      // store: true,
       // stream: false
     };
 
+    // 3) Cloudflare Worker 프록시 호출
     const response = await fetch(WORKER_PROXY_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
-      throw new Error(`이미지 처리 중 오류 발생 (HTTP ${response.status})`);
+      throw new Error(`이미지 처리 중 오류 (HTTP ${response.status})`);
     }
 
-    // 3) JSON 파싱 → 추출된 텍스트 사용
+    // 4) JSON 파싱 → GPT의 답변 텍스트 추출
     const data = await response.json();
-    const extractedText = data?.choices?.[0]?.message?.content || "결과 없음";
-    targetTextArea.value = extractedText;
+    // Vision 응답에서 텍스트는 data.choices[0].message.content 에 위치
+    const extractedText = data?.choices?.[0]?.message?.content || "";
+
+    // 5) 최종 추출된 텍스트를 textarea에 반영
+    if (!extractedText) {
+      targetTextArea.value = "텍스트가 인식되지 않았습니다.";
+    } else {
+      targetTextArea.value = extractedText;
+    }
     targetTextArea.focus();
 
   } catch (error) {
-    console.error("Error:", error);
-    targetTextArea.value = "이미지 처리 중 오류가 발생했습니다: " + error.message;
+    console.error("handleImageUpload Error:", error);
+    targetTextArea.value = "이미지 처리 중 오류: " + error.message;
   }
 }
+
 
 
 // 이벤트 리스너 추가
