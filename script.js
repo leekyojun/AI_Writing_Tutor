@@ -48,7 +48,7 @@ async function handleImageUpload(event) {
   if (!file) return;
 
   const targetTextArea = event.target.id.includes("Draft") ? draftText : finalText;
-  targetTextArea.value = "이미지 처리 중입니다...";
+  targetTextArea.innerText = "이미지 처리 중입니다...";
 
   try {
     // 이미지를 Base64로 변환
@@ -96,11 +96,11 @@ async function handleImageUpload(event) {
     const extractedText = data.choices[0].message.content;
 
     // 추출된 텍스트를 텍스트 영역에 표시
-    targetTextArea.value = extractedText;
+    targetTextArea.innerText = extractedText;
     targetTextArea.focus();
   } catch (error) {
     console.error("Error:", error);
-    targetTextArea.value = "이미지 처리 중 오류가 발생했습니다: " + error.message;
+    targetTextArea.innerText = "이미지 처리 중 오류가 발생했습니다: " + error.message;
   }
 }
 
@@ -389,7 +389,7 @@ btnVocab.addEventListener("click", async () => {
 
 // (3) First Draft → [AI 피드백 생성]
 btnDraftFeedback.addEventListener("click", async () => {
-  const draft = draftText.value.trim();
+  const draft = draftText.innerText.trim();
   if (!draft) {
     alert("초안 글을 입력해주세요!");
     return;
@@ -432,7 +432,7 @@ btnDraftFeedback.addEventListener("click", async () => {
 
 // (4) Final Draft
 btnImportDraft.addEventListener("click", () => {
-  finalText.value = draftText.value;
+  finalText.innerText = draftText.value;
 });
 
 btnFinalSubmit.addEventListener("click", async () => {
@@ -443,7 +443,7 @@ btnFinalSubmit.addEventListener("click", async () => {
   }
 
   // Final Draft 비어있는지 체크
-  const finalContent = finalText.value.trim();
+  const finalContent = finalText.innerText.trim();
   if (!finalContent) {
     alert("최종 글을 작성해주세요!");
     return;
