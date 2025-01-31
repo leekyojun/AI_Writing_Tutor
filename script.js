@@ -33,9 +33,13 @@ let ideaList = [];
 // firstDraft의 전역 변수를 선언해 초기값은 빈 문자열로
 let firstDraftContent = "";
 
-// (A) 공통: OpenAI(Proxy) 스트리밍 함수
+
+/**
+ * (A) 공통: OpenAI(Proxy) 스트리밍 함수
+ * - chunk(조각)마다 문자열을 이어붙여(buffer) 한 줄 단위로만 JSON.parse()
+ * - onToken(content)가 호출될 때마다, 현재까지 수신된 text를 UI에 표시 가능
+ */
 async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
-  // "https://api.openai.com/v1/chat/completions" 대신 Worker 경유
   const endpoint = WORKER_PROXY_URL;
 
   const messages = [
@@ -47,10 +51,10 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
-      // => Authorization 헤더는 Worker가 대신 추가
+      // => Authorization은 Worker에서 자동 처리
     },
     body: JSON.stringify({
-      model: "gpt-4o",  // 또는 gpt-4o-mini 등
+      model: "gpt-4o",   // 또는 gpt-4o-mini 등
       messages: messages,
       stream: true,
       max_tokens: 512,
@@ -63,8 +67,10 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
     throw new Error("OpenAI API(Worker) 에러: " + errorMsg);
   }
 
+  // SSE(Stream) 수신
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
+  let buffer = ""; // 누적 버퍼
   let done = false;
 
   while (!done) {
@@ -72,13 +78,20 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
     done = readerDone;
 
     if (value) {
-      const chunkText = decoder.decode(value);
-      const lines = chunkText.split("\n");
+      buffer += decoder.decode(value, { stream: true });
 
-      for (const line of lines) {
+      // 줄 단위로 분할
+      const lines = buffer.split("\n");
+
+      // 맨 마지막 줄은 아직 끝나지 않았을 수 있으므로 buffer에 남긴다
+      buffer = lines.pop();
+
+      // 나머지 완성된 줄들 처리
+      for (let line of lines) {
         const trimmed = line.trim();
         if (trimmed === "data: [DONE]") {
-          return; 
+          // 스트리밍 종료
+          return;
         }
         if (trimmed.startsWith("data: ")) {
           const jsonStr = trimmed.replace("data: ", "");
@@ -90,7 +103,7 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
                 onToken(content);
               }
             } catch (err) {
-              // JSON 파싱 오류는 무시
+              // JSON 파싱 실패(중간에 끊긴 경우 등)는 무시
             }
           }
         }
@@ -98,6 +111,9 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
     }
   }
 }
+
+
+
 
 
 // (B) 난이도 해석 함수
@@ -435,108 +451,48 @@ btnFinalSubmit.addEventListener("click", async () => {
   Ensure your feedback is motivating and encourages the student to continue improving their writing. Be concise but thorough.
 `;
 
-  let accumulatedText = "";
-  let streamingDone = false; // 스트리밍 완료 여부
 
-  try {
-    const endpoint = WORKER_PROXY_URL;
-    const messages = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt }
-    ];
+let accumulatedText = "";
+try {
+  // 1) Worker + 버퍼 파싱 로직 통일
+  await callOpenAIAPIStream(systemPrompt, userPrompt, (token) => {
+    // 스트리밍된 텍스트를 누적
+    accumulatedText += token;
+    finalResult.textContent = accumulatedText;
+    window.scrollTo(0, document.body.scrollHeight);
+  });
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: messages,
-        stream: true,
-        max_tokens: 512,
-        temperature: 0.7
-      })
-    });
+  // 2) 스트리밍 완료 후, 점수 파싱 + 그래프 업데이트
+  const ideaRegex = /Idea Score:\s*(\d{1,3})/i;
+  const structRegex = /Structure Score:\s*(\d{1,3})/i;
+  const accuRegex = /Accuracy Score:\s*(\d{1,3})/i;
 
-    if (!response.ok) {
-      const errorMsg = await response.text();
-      throw new Error("OpenAI API 에러: " + errorMsg);
+  const ideaMatch = ideaRegex.exec(accumulatedText);
+  const structureMatch = structRegex.exec(accumulatedText);
+  const accuracyMatch = accuRegex.exec(accumulatedText);
+
+  let ideaScore = null;
+  let structureScore = null;
+  let accuracyScore = null;
+
+  if (ideaMatch) {
+    const val = parseInt(ideaMatch[1], 10);
+    if (!isNaN(val) && val >= 0 && val <= 100) {
+      ideaScore = val;
     }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let done = false;
-
-    while (!done) {
-      const { value, done: readerDone } = await reader.read();
-      done = readerDone;
-
-      if (value) {
-        const chunkText = decoder.decode(value);
-        const lines = chunkText.split("\n");
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed === "data: [DONE]") {
-            // 스트리밍 종료 시점
-            streamingDone = true;
-            break;
-          }
-          if (trimmed.startsWith("data: ")) {
-            const jsonStr = trimmed.replace("data: ", "");
-            if (jsonStr !== "") {
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed?.choices?.[0]?.delta?.content;
-                if (content) {
-                  // 중간 스트리밍 표시 (점수+피드백 모두)
-                  accumulatedText += content;
-                  finalResult.textContent = accumulatedText;
-                  window.scrollTo(0, document.body.scrollHeight);
-                }
-              } catch (err) {
-                // JSON 파싱 오류 무시
-              }
-            }
-          }
-        }
-      }
+  }
+  if (structureMatch) {
+    const val = parseInt(structureMatch[1], 10);
+    if (!isNaN(val) && val >= 0 && val <= 100) {
+      structureScore = val;
     }
-
-    // 2) 스트리밍 완료 후(점수 파싱 + 그래프 업데이트)
-    if (streamingDone) {
-      // (A) 정규식으로 점수 추출
-      const ideaRegex = /Idea Score:\s*(\d{1,3})/i;
-      const structRegex = /Structure Score:\s*(\d{1,3})/i;
-      const accuRegex = /Accuracy Score:\s*(\d{1,3})/i;
-
-      const ideaMatch = ideaRegex.exec(accumulatedText);
-      const structureMatch = structRegex.exec(accumulatedText);
-      const accuracyMatch = accuRegex.exec(accumulatedText);
-
-      let ideaScore = null;
-      let structureScore = null;
-      let accuracyScore = null;
-
-      if (ideaMatch) {
-        const val = parseInt(ideaMatch[1], 10);
-        if (!isNaN(val) && val >= 0 && val <= 100) {
-          ideaScore = val;
-        }
-      }
-      if (structureMatch) {
-        const val = parseInt(structureMatch[1], 10);
-        if (!isNaN(val) && val >= 0 && val <= 100) {
-          structureScore = val;
-        }
-      }
-      if (accuracyMatch) {
-        const val = parseInt(accuracyMatch[1], 10);
-        if (!isNaN(val) && val >= 0 && val <= 100) {
-          accuracyScore = val;
-        }
-      }
+  }
+  if (accuracyMatch) {
+    const val = parseInt(accuracyMatch[1], 10);
+    if (!isNaN(val) && val >= 0 && val <= 100) {
+      accuracyScore = val;
+    }
+  }
 
       // (B) 그래프 업데이트
       if (ideaScore !== null && structureScore !== null && accuracyScore !== null) {
