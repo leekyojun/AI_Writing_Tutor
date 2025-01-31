@@ -59,14 +59,14 @@ async function handleImageUpload(event) {
       reader.readAsDataURL(file);
     });
 
-    // GPT-4 Vision API 호출
+    // 이미지 호출출
     const response = await fetch(WORKER_PROXY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4-vision-preview",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "user",
@@ -84,7 +84,7 @@ async function handleImageUpload(event) {
             ],
           },
         ],
-        max_tokens: 1000,
+        max_tokens: 300,
       }),
     });
 
