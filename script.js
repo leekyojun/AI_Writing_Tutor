@@ -59,7 +59,7 @@ async function handleImageUpload(event) {
       reader.readAsDataURL(file);
     });
 
-    // 이미지 호출출
+    // 이미지 호출
     const response = await fetch(WORKER_PROXY_URL, {
       method: "POST",
       headers: {
@@ -95,7 +95,7 @@ async function handleImageUpload(event) {
     const data = await response.json();
     const extractedText = data.choices[0].message.content;
 
-    // 추출된 텍스트를 텍스트 영역에 표시
+   // 추출된 텍스트를 텍스트 영역에 표시
     targetTextArea.innerText = extractedText;
     targetTextArea.focus();
   } catch (error) {
@@ -105,7 +105,7 @@ async function handleImageUpload(event) {
 }
 
 
-// 이벤트 리스너 추가
+// 이미지 관련 이벤트 리스너
 uploadDraft.addEventListener("change", handleImageUpload);
 cameraDraft.addEventListener("change", handleImageUpload);
 uploadFinal.addEventListener("change", handleImageUpload);
@@ -113,7 +113,7 @@ cameraFinal.addEventListener("change", handleImageUpload);
 
 
 /**
- * (A) 공통: OpenAI(Proxy) 스트리밍 함수
+ * OpenAI(Proxy) 스트리밍 함수
  * - chunk(조각)마다 문자열을 이어붙여(buffer) 한 줄 단위로만 JSON.parse()
  * - onToken(content)가 호출될 때마다, 현재까지 수신된 text를 UI에 표시 가능
  */
@@ -129,10 +129,10 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
-      // => Authorization은 Worker에서 자동 처리
+      // => Authorization은 Worker에서  처리
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",   // 또는 gpt-4o-mini 등
+      model: "gpt-4o-mini",   // 또는 gpt-4o
       messages: messages,
       stream: true,
       max_tokens: 512,
@@ -343,14 +343,12 @@ btnVocab.addEventListener("click", async () => {
 
   const difficultyDesc = getDifficultyDescription();
   const topic = topicInput.value.trim(); // 사용자가 입력한 Topic도 함께 전달
-
-  // 기존 systemPrompt와 비슷하게, "You are an English tutor..."
+  
   const systemPrompt = `
   You are an English tutor who helps students expand a key idea into more detailed content.
   The student's language level is: ${difficultyDesc}.
   `;
 
-  // 새 userPrompt 내용
   const userPrompt = `
   We have an overall Topic: "${topic}"
   And a specific chosen Key Idea: "${selectedIdea}"
@@ -452,8 +450,7 @@ btnFinalSubmit.addEventListener("click", async () => {
   finalResult.textContent = "최종 평가 생성 중입니다...\n";
 
     // 스크롤/포커스
-    finalResult.scrollIntoView({ behavior: "smooth" });
-    // 포커스를 주려면 div에 tabindex 필요
+    finalResult.scrollIntoView({ behavior: "smooth" });    
     finalResult.setAttribute("tabindex", "-1");
     finalResult.focus();
   
@@ -531,7 +528,7 @@ btnFinalSubmit.addEventListener("click", async () => {
 
 let accumulatedText = "";
 try {
-  // 1) Worker + 버퍼 파싱 로직 통일
+  
   await callOpenAIAPIStream(systemPrompt, userPrompt, (token) => {
     // 스트리밍된 텍스트를 누적
     accumulatedText += token;
