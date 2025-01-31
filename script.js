@@ -40,64 +40,74 @@ let ideaList = [];
 // firstDraft의 전역 변수를 선언해 초기값은 빈 문자열로
 let firstDraftContent = "";
 
-/**
- * 이미지 업로드 핸들러 (GPT-4 Vision API로 이미지 전송 및 텍스트 추출)
- */
 async function handleImageUpload(event) {
-  const file = event.target.files[0]; // 첫 번째 선택한 파일
+  const file = event.target.files[0];
   if (!file) return;
 
+  // 최종으로 넣어줄 textarea
   const targetTextArea = event.target.id.includes("Draft") ? draftText : finalText;
   targetTextArea.value = "이미지 처리 중입니다...";
 
   try {
-    // 이미지를 Base64로 변환
+    // 1) 이미지를 Base64로 변환
     const base64Image = await new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onload = () => {
+        // "data:image/jpeg;base64,..." 형태 전체가 아니라, Base64 부분만 추출하려면 아래처럼 split
+        // 여기서는 그대로 한꺼번에 넘길 수도 있음.
+        const base64Data = reader.result.split(",")[1];
+        resolve(base64Data);
+      };
       reader.onerror = (error) => reject(error);
       reader.readAsDataURL(file);
     });
 
-    // 이미지 호출출
+    // 2) OpenAI Vision API 호출(프록시 경유)
+    const requestBody = {
+      model: "gpt-4o-mini",  // Vision 모델
+      // Vision 모델은 messages[].content에 배열로 [text, image_url]을 모두 넣어야 함
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "이 이미지의 영어 텍스트를 정확하게 추출해주세요. 오탈자가 있으면 원본 그대로 유지해주세요."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+                // detail: "auto" // 명시적으로 필요하면 추가 (기본값: auto)
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 300,
+      // Vision 예제 문서에서는 store: true도 자주 사용
+      // store: true,
+      // stream: false
+    };
+
     const response = await fetch(WORKER_PROXY_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "이 이미지의 영어 텍스트를 정확하게 추출해주세요. 오탈자가 있으면 원본 그대로 유지해주세요.",
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                },
-              },
-            ],
-          },
-        ],
-        max_tokens: 300,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
-      throw new Error("이미지 처리 중 오류가 발생했습니다.");
+      throw new Error(`이미지 처리 중 오류 발생 (HTTP ${response.status})`);
     }
 
+    // 3) JSON 파싱 → 추출된 텍스트 사용
     const data = await response.json();
-    const extractedText = data.choices[0].message.content;
-
-    // 추출된 텍스트를 텍스트 영역에 표시
+    const extractedText = data?.choices?.[0]?.message?.content || "결과 없음";
     targetTextArea.value = extractedText;
     targetTextArea.focus();
+
   } catch (error) {
     console.error("Error:", error);
     targetTextArea.value = "이미지 처리 중 오류가 발생했습니다: " + error.message;
