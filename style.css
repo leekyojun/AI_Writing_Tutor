@@ -1,0 +1,254 @@
+/* 전역 스타일 */
+html, body {
+    margin: 0; 
+    padding: 0; 
+    background: #f0f0f0;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 16px;  /* 기본 폰트 사이즈 16px */
+  }
+  
+  /* 상단 컨테이너 */
+  .container {
+    max-width: 952px;  /* 약 120% 확대한 값 */
+    margin: 0 auto;
+    background: #fff;
+    padding: 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative; 
+    padding-top: 60px
+  }
+  
+  /* 로고 (가로 100px, 좌측 상단) */
+  .logo {
+    width: 100px;
+    height: auto;
+    position: absolute;
+    top: 24px;
+    left: 24px;
+  }
+  
+  /* 메인 타이틀 (페이지 헤더) */
+  .main-title {
+    text-align: center;
+    font-size: 35px; /* 타이틀은 35px */
+    font-weight: 900;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  /* 난이도 선택 컨테이너 */
+  .level-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  
+  .level-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+  
+  .level-box label {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  
+  .level-box select {
+    width: 120px;
+    padding: 4px;
+    border: 1px solid #C6C6C6;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  /* 섹션 컨테이너 */
+  .section {
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* 섹션 타이틀 */
+  .section-title {
+    font-size: 18px; 
+    font-weight: 700;
+    margin: 0;
+  }
+  
+  /* 주제 입력 박스 */
+  .topic-input {
+    flex: 1;
+    width: 100%;
+    max-width: 350px; 
+    padding: 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-top: 4px;
+    margin-right: 4px;   
+  }
+
+    /* 아이디어 셀렉트 */
+    .idea-select {
+      width: 100%;
+      max-width: 350px; /* 데스크톱에서 최대 350px */
+      padding: 6px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+  /* 버튼 공통 스타일 */
+  button {
+    padding: 6px 12px;
+    min-width: 60px;
+    background: #1644B9;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px; 
+    cursor: pointer;
+
+  }
+  button:hover {
+    background: #0d3487;
+  }
+  
+  /* 아이디어 drop-down */
+  select {
+    font-size: 16px;
+    padding: 4px 6px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+  }
+  
+  #customIdeaInput {
+    width: 100%; /* 부모 요소 크기에 맞게 확장 */
+    max-width: 350px; /* 최대 크기 제한 */
+    min-width: 200px;
+    padding: 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+
+  /* 결과 표시 영역 */
+  .result-box {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 50px;
+    padding: 8px;
+    white-space: pre-wrap;
+    font-size: 16px;
+  }
+  
+  /* First/Final Draft 텍스트 입력 */
+  .draft-textarea {
+    width: 100%;
+    font-size: 16px;  /* 요구사항: 16px 폰트 */
+    font-family: 'Poppins', sans-serif; 
+    padding: 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-sizing: border-box;
+    min-height: 200px; /* 예: 기본 80px*2배 가량 */
+  }
+  
+/* ========== 원형 그래프 스타일 추가 ========== */
+
+/* 그래프 컨테이너 */
+.graph-wrap {  
+  position: relative;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* 원형 그래프 배치 */
+.circle-graph {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.circle {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.circle svg {
+  transform: rotate(-90deg);
+}
+
+.circle circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+.circle .bg {
+  stroke: #eee;
+  r: 60;
+  cx: 75;
+  cy: 75;
+}
+
+.circle .progress {
+  stroke: #00C5E0;
+  stroke-dasharray: 377;
+  stroke-dashoffset: 377;
+  transition: stroke-dashoffset 0.5s ease;
+  r: 60;
+  cx: 75;
+  cy: 75;
+}
+
+.circle.total .progress {
+  stroke: #C275FF;
+}
+
+.circle .value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: bold;
+  color: #444;
+}
+
+.circle-label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+  
+  /* 반응형 */
+  @media (max-width: 768px) {
+    .container {
+      padding: 16px;
+    }
+    .logo {
+      position: static;       
+    }
+    #customIdeaInput {
+      max-width: 100%; /* 작은 화면에서는 최대 크기를 제한하지 않음 */
+      width: 100%; /* 화면 폭에 맞게 조정 */
+  }
+  
+  }
