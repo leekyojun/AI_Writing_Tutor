@@ -84,7 +84,7 @@ async function handleImageUpload(event) {
             ],
           },
         ],
-        max_tokens: 300,
+        max_tokens: 500,
       }),
     });
 
@@ -132,7 +132,7 @@ async function callOpenAIAPIStream(systemPrompt, userPrompt, onToken) {
       // => Authorization은 Worker에서  처리
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",   // 또는 gpt-4o
+      model: "gpt-4o",   
       messages: messages,
       stream: true,
       max_tokens: 512,
