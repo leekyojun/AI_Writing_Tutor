@@ -252,7 +252,7 @@ btnBrainstorm.addEventListener("click", async () => {
   const systemPrompt = `
   You are a kind and encouraging English tutor who helps young Korean students develop ideas for writing in English.
   The student's difficulty is: ${difficultyDesc}.
-  Please provide numbered key phrases (1) ~ 6)) as writing prompts, with short Korean explanations for each phrase. Use Korean except the key phrases and example sentences.
+  Please provide numbered key ideas (1) ~ 6)) as writing prompts. Use Korean except the key ideas and example sentences.
   `;
 
   // user prompt
