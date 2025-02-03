@@ -350,14 +350,14 @@ btnVocab.addEventListener("click", async () => {
   const systemPrompt = `
   You are an English tutor who helps students expand a key idea into more detailed content.
   The student's language level is: ${difficultyDesc}.
+  Use Korean except the keywords and example sentences.
   `;
 
   const userPrompt = `
   We have an overall Topic: "${topic}"
   And a specific chosen Key Idea: "${selectedIdea}"
 
-  First, briefly explain in Korean how the specific chosen Key Idea can help develop the overall Topic.
-  Then, propose six detailed and relevant keywords that can further expand the Key Idea.
+  Propose six detailed and relevant keywords that can further expand the Key Idea.
 
   For each keyword, include:  
    - A simple suggestion in Korean to expand the Key Idea using the keyword.  
