@@ -259,7 +259,8 @@ btnBrainstorm.addEventListener("click", async () => {
   const userPrompt = `
   Topic: "${topic}"
   
-  Please provide Key Words that help develop the topic and include short explanations in Korean. Provide up to 6 main items in total.
+  First, write a brief overall comment about the topic in Korean.
+  Then, refer to the format below and propose 6 key ideas that can help develop the topic. 
   
   Follow this format:
 
