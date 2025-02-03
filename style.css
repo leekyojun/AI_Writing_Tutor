@@ -230,6 +230,13 @@ html, body {
     box-sizing: border-box;
     min-height: 200px; /* 예: 기본 80px*2배 가량 */
   }
+
+  .footer {
+    text-align: center; 
+    padding: 8px; 
+    font-size: 14px; 
+    color: #666;     
+  }
   
 
 /* 그래프 컨테이너 */
