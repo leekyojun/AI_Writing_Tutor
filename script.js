@@ -356,7 +356,7 @@ btnVocab.addEventListener("click", async () => {
   We have an overall Topic: "${topic}"
   And a specific chosen Key Idea: "${selectedIdea}"
 
-  First, explain briefly how the selected Key Idea can effectively develop the overall Topic in Korean.
+  First, briefly explain in Korean how the specific chosen Key Idea can help develop the overall Topic.
   Then, propose six detailed and relevant keywords that can further expand the Key Idea.
 
   For each keyword, include:  
